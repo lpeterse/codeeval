@@ -7,5 +7,5 @@ main  = putStr . unlines . map (show . maximumBeauty) . lines =<< readFile . hea
 
 maximumBeauty :: String -> Int
 maximumBeauty =
-  sum . zipWith (*) (reverse [1..26]) . sortBy (flip compare) .
+  sum . zipWith (*) [26,25..] . sortBy (flip compare) .
   map length . group . sort . map toLower . filter isLetter
