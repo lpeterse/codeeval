@@ -5,7 +5,6 @@ main  = putStr . unlines . map (f . read) . lines =<< readFile . head =<< getArg
 
 f :: Int -> String
 f 0 = "ZeroDollars"
-f 1 = "OneDollar"
 f i = g i ++ "Dollars"
 
 g :: Int -> String
