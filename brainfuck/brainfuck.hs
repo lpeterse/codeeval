@@ -1,30 +1,48 @@
-type Input = String
-type State = String
+import Control.Monad
 
 main :: IO ()
 main  = brainfuck helloWorld
 
-brainfuck :: String -> IO ()
-brainfuck s = i s (repeat '\NUL', '\NUL', repeat '\NUL') >> pure ()
+type Tape = (String, Char, String)
+type Prog = String
 
-i :: (State, Char, State, Input) -> IO (State, Char, State, Input)
-i (l,m,r, [])   = pure (l,m,r)
-i (l,m,r, x:xs) = case x of
-  '>' -> i xs (m:l, head r, tail r, xs)
-  '<' -> i xs (tail l, head l, m:r, xs)
-  '+' -> i xs (l, succ m, r, xs)
-  '-' -> i xs (l, pred m, r, xs)
-  '.' -> putChar m >> i (l, m, r, xs)
-  ',' -> getChar >>= \c-> i (l, c, r, xs)
-  '[' -> i xs lmr
-  ']' -> pure (l, m, r, xs)
-  _   -> i (l, m, r, xs)
+nil :: Tape
+nil = let n = '\NUL' in (repeat n, n, repeat n)
+
+mov :: Int -> Tape -> Tape
+mov i (l,m,r) | i > 0     = mov (pred i) (m:l, head r, tail r)
+              | i < 0     = mov (succ i) (tail l, head l, m:r)
+              | otherwise = (l,m,r)
+
+app :: (Char -> Char) -> Tape -> Tape
+app f (l,m,r) = (l,f m,r)
+
+get :: Tape -> Char
+get (_,m,_) = m
+
+brainfuck :: String -> IO ()
+brainfuck s = void $ intr (0,nil,s)
+
+intr :: (Int, Tape, Prog) -> IO (Int, Tape, Prog)
+intr (off, tape, [])   = pure (off, tape, [])
+intr (off, tape, x:xs) = case x of
+  '>' -> intr (off + 1, mov 1 tape, xs)
+  '<' -> intr (off - 1, mov (-1) tape, xs)
+  '+' -> intr (off,  app succ tape, xs)
+  '-' -> intr (off,  app pred tape, xs)
+  '.' -> putChar (get tape) >> intr (off, tape, xs)
+  ',' -> getChar >>= \c-> intr (off, app (const c) tape, xs)
+  '[' -> loop (off, tape, xs) >>= intr
+  ']' -> pure (off, tape, xs)
+  _   -> intr (off, tape, xs)
   where
-    loop st'@(p', _, _) ys = do
-      st''@(p'', _, _) <- i xs st'
-      case compare p' p'' of
-        EQ ->
-      >>= \tt'-> if head (snd tt') == '\NUL' then pure tt' else loop tt' ys
+    loop (o,tp,ys) = do
+      (o',tp',ys') <- intr (o,tp,ys)
+      if get tp' /= '\NUL'
+        then loop (o', tp', ys )
+        else pure (o', tp', ys')
 
 helloWorld :: String
+--helloWorld = ""
+--helloWorld = "+[--->++<]>+++.[->+++++++<]>.[--->+<]>----.++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+."
 helloWorld  = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.+++."
