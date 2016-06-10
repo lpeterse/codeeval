@@ -1,48 +1,23 @@
-import Control.Monad
+import Data.Word
+import System.Environment (getArgs)
 
 main :: IO ()
-main  = brainfuck helloWorld
-
-type Tape = (String, Char, String)
-type Prog = String
-
-nil :: Tape
-nil = let n = '\NUL' in (repeat n, n, repeat n)
-
-mov :: Int -> Tape -> Tape
-mov i (l,m,r) | i > 0     = mov (pred i) (m:l, head r, tail r)
-              | i < 0     = mov (succ i) (tail l, head l, m:r)
-              | otherwise = (l,m,r)
-
-app :: (Char -> Char) -> Tape -> Tape
-app f (l,m,r) = (l,f m,r)
-
-get :: Tape -> Char
-get (_,m,_) = m
+main = mapM_ brainfuck =<< pure . lines =<< readFile . head =<< getArgs
 
 brainfuck :: String -> IO ()
-brainfuck s = void $ intr (0,nil,s)
-
-intr :: (Int, Tape, Prog) -> IO (Int, Tape, Prog)
-intr (off, tape, [])   = pure (off, tape, [])
-intr (off, tape, x:xs) = case x of
-  '>' -> intr (off + 1, mov 1 tape, xs)
-  '<' -> intr (off - 1, mov (-1) tape, xs)
-  '+' -> intr (off,  app succ tape, xs)
-  '-' -> intr (off,  app pred tape, xs)
-  '.' -> putChar (get tape) >> intr (off, tape, xs)
-  ',' -> getChar >>= \c-> intr (off, app (const c) tape, xs)
-  '[' -> loop (off, tape, xs) >>= intr
-  ']' -> pure (off, tape, xs)
-  _   -> intr (off, tape, xs)
+brainfuck s = intr (repeat n,n,repeat n,s) >> putChar '\n'
   where
-    loop (o,tp,ys) = do
-      (o',tp',ys') <- intr (o,tp,ys)
-      if get tp' /= '\NUL'
-        then loop (o', tp', ys )
-        else pure (o', tp', ys')
-
-helloWorld :: String
---helloWorld = ""
---helloWorld = "+[--->++<]>+++.[->+++++++<]>.[--->+<]>----.++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+."
-helloWorld  = "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.+++."
+    n                 = 0 :: Word8
+    intr (l,m,r,[])   = pure (l,m,r,[])
+    intr (l,m,r,x:xs) = case x of
+      '>' -> intr (m:l,head r,tail r,xs)
+      '<' -> intr (tail l,head l,m:r,xs)
+      '+' -> intr (l,m + 1,r,xs)
+      '-' -> intr (l,m - 1,r,xs)
+      '.' -> putChar (toEnum $ fromIntegral m) >> intr (l,m,r,xs)
+      ',' -> getChar >>= \c-> intr (l,fromIntegral $ fromEnum c,r,xs)
+      '[' -> loop (l,m,r,xs) >>= intr
+      ']' -> pure (l,m,r,xs)
+      _   -> intr (l,m,r,xs)
+    loop (a,b,c,d) = intr (a,b,c,d) >>= \(e,f,g,h)->
+      if f /= n then loop (e,f,g,d) else pure (e,f,g,h)
