@@ -16,8 +16,8 @@ brainfuck s = intr (repeat n,n,repeat n,s) >> putChar '\n'
       '-' -> intr (l,m - 1,r,xs)
       '.' -> putChar (toEnum $ fromIntegral m) >> intr (l,m,r,xs)
       ',' -> getChar >>= \c-> intr (l,fromIntegral $ fromEnum c,r,xs)
-      '[' -> loop (l,m,r,xs) >>= intr
+      '[' -> loop (l,m,r,xs)
       ']' -> pure (l,m,r,xs)
       _   -> intr (l,m,r,xs)
     loop (a,b,c,d) = intr (a,b,c,d) >>= \(e,f,g,h)->
-      if f /= n then loop (e,f,g,d) else pure (e,f,g,h)
+      if f /= n then loop (e,f,g,d) else intr (e,f,g,h)
