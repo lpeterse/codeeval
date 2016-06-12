@@ -1,5 +1,5 @@
 import System.Environment (getArgs)
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
 main :: IO ()
@@ -22,27 +22,28 @@ add groups x@(i,s) | null friendlyGroups = singleGroup : groups
     friendlyGroup = M.unionsWith S.union (singleGroup : friendlyGroups)
 
 divide :: (Int,String) -> [M.Map Int (S.Set String)] -> ([M.Map Int (S.Set String)], [M.Map Int (S.Set String)])
-divide _ [] = ([], [])
-divide t@(i,s) (group:groups)
-  | friendsInGroup = (group:friendlyGroups, unfriendlyGroups)
-  | otherwise      = (friendlyGroups, group:unfriendlyGroups)
+divide (i,s) groups = withAccum groups ([],[])
   where
-    (friendlyGroups, unfriendlyGroups) = divide t groups
-    friendsInGroup = anyEqualFriends || anySmallerFriends || anyLargerFriends
-    anyEqualFriends = case M.lookup i group of
-      Nothing -> False
-      Just ss -> any (equalFriend s) ss
-    anySmallerFriends = case M.lookup (i - 1) group of
-      Nothing -> False
-      Just ss -> any (unequalFriend s) ss
-    anyLargerFriends = case M.lookup (i + 1) group of
-      Nothing -> False
-      Just ss -> any (`unequalFriend` s) ss
+    withAccum [] tt    = tt
+    withAccum (g:gs) (friendly, unfriendly)
+      | friendsInGroup = withAccum gs (g:friendly, unfriendly)
+      | otherwise      = withAccum gs (friendly, g:unfriendly)
+      where
+        friendsInGroup = anyEqualFriends || anySmallerFriends || anyLargerFriends
+        anyEqualFriends = case M.lookup i g of
+          Nothing -> False
+          Just ss -> any (equalFriend s) ss
+        anySmallerFriends = case M.lookup (i - 1) g of
+          Nothing -> False
+          Just ss -> any (unequalFriend s) ss
+        anyLargerFriends = case M.lookup (i + 1) g of
+          Nothing -> False
+          Just ss -> any (`unequalFriend` s) ss
 
-    equalFriend (x:xs) (y:ys) | x == y = equalFriend xs ys
-                              | otherwise = xs == ys
-    equalFriend _ _           = True
+        equalFriend (x:xs) (y:ys) | x == y = equalFriend xs ys
+          | otherwise = xs == ys
+        equalFriend _ _           = True
 
-    unequalFriend (x:xs) yys@(y:ys) | x == y    = unequalFriend xs ys
-                                    | otherwise = xs == yys
-    unequalFriend _ _               = True
+        unequalFriend (x:xs) yys@(y:ys) | x == y    = unequalFriend xs ys
+          | otherwise = xs == yys
+        unequalFriend _ _               = True
