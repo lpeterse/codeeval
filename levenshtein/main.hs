@@ -1,49 +1,48 @@
 import System.Environment (getArgs)
-import qualified Data.Map.Strict as M
+
 import qualified Data.Set as S
+import qualified Data.IntMap.Strict as IM
 
 main :: IO ()
-main = argl . map (\x->(length x, x)) . lines =<< readFile . head =<< getArgs
+main = argl . zipWith (\i x->(i, length x, x)) [1..] . lines =<< readFile . head =<< getArgs
 
-argl :: [(Int, String)] -> IO ()
-argl xs = mapM_ (print . peers (foldl add [] dict)) tests
+argl :: [(Int, Int, String)] -> IO ()
+argl xs = mapM_ (print . flip peers groups) tests
   where
-    (tests, _:dict) = span (/= (12, "END OF INPUT")) xs
+    (tests, _:dict) = span (\(_,_,s)-> s /= "END OF INPUT") xs
+    groups          = foldr add IM.empty dict
 
-peers :: [M.Map Int (S.Set String)] -> (Int, String) -> Int
-peers gs input = foldl (\i m-> i + foldl (\j s-> j + S.size s) 0 m) 0 $ fst $ divide input gs
+peers :: (Int, Int, String) -> IM.IntMap (IM.IntMap (S.Set String)) -> Int
+peers x groups = foldl (\c im-> c + foldl (\d is-> d + S.size is) 0 im) 0 $ map (\n-> IM.findWithDefault IM.empty n groups) $ findFriendlyGroupIds x groups
 
-add :: [M.Map Int (S.Set String)] -> (Int,String) -> [M.Map Int (S.Set String)]
-add groups x@(i,s) | null friendlyGroups = singleGroup : groups
-                   | otherwise           = friendlyGroup : unfriendlyGroups
+add :: (Int, Int, String) -> IM.IntMap (IM.IntMap (S.Set String)) -> IM.IntMap (IM.IntMap (S.Set String))
+add x@(n,l,s) groups = case friendlyIds of
+  []  -> IM.insert n (IM.singleton l (S.singleton s)) groups
+  [m] -> IM.adjust (IM.insertWith S.union l (S.singleton s)) m groups
+  _   -> IM.insert n friendlyGroup unfriendlyGroups
   where
-    (friendlyGroups, unfriendlyGroups) = divide x groups
-    singleGroup   = M.singleton i (S.singleton s)
-    friendlyGroup = M.unionsWith S.union (singleGroup : friendlyGroups)
+    friendlyIds      = findFriendlyGroupIds x groups
+    friendlyGroups   = map (\g-> IM.findWithDefault IM.empty g groups) friendlyIds
+    friendlyGroup    = IM.unionsWith S.union (IM.singleton l (S.singleton s) : friendlyGroups)
+    unfriendlyGroups = foldr IM.delete groups friendlyIds
 
-divide :: (Int,String) -> [M.Map Int (S.Set String)] -> ([M.Map Int (S.Set String)], [M.Map Int (S.Set String)])
-divide (i,s) groups = withAccum groups ([],[])
+findFriendlyGroupIds :: (Int, Int, String) -> IM.IntMap (IM.IntMap (S.Set String)) -> [Int]
+findFriendlyGroupIds (_,l,s) = IM.foldlWithKey (\ids n g-> if friendsInGroup g then n:ids else ids) []
   where
-    withAccum [] tt    = tt
-    withAccum (g:gs) (friendly, unfriendly)
-      | friendsInGroup = withAccum gs (g:friendly, unfriendly)
-      | otherwise      = withAccum gs (friendly, g:unfriendly)
+    friendsInGroup g = anyEqualFriends || anySmallerFriends || anyLargerFriends
       where
-        friendsInGroup = anyEqualFriends || anySmallerFriends || anyLargerFriends
-        anyEqualFriends = case M.lookup i g of
+        anyEqualFriends = case IM.lookup l g of
           Nothing -> False
           Just ss -> any (equalFriend s) ss
-        anySmallerFriends = case M.lookup (i - 1) g of
+        anySmallerFriends = case IM.lookup (l - 1) g of
           Nothing -> False
           Just ss -> any (unequalFriend s) ss
-        anyLargerFriends = case M.lookup (i + 1) g of
+        anyLargerFriends = case IM.lookup (l + 1) g of
           Nothing -> False
           Just ss -> any (`unequalFriend` s) ss
-
         equalFriend (x:xs) (y:ys) | x == y = equalFriend xs ys
           | otherwise = xs == ys
         equalFriend _ _           = True
-
         unequalFriend (x:xs) yys@(y:ys) | x == y    = unequalFriend xs ys
           | otherwise = xs == yys
         unequalFriend _ _               = True
