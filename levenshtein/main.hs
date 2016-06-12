@@ -1,34 +1,48 @@
 import System.Environment (getArgs)
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 main :: IO ()
-main = putStr . unlines . argl . lines =<< readFile . head =<< getArgs
+main = argl . map (\x->(length x, x)) . lines =<< readFile . head =<< getArgs
 
-argl :: [String] -> [String]
-argl xs = map (show . peers (foldl add [] dict)) tests
+argl :: [(Int, String)] -> IO ()
+argl xs = mapM_ (print . peers (foldl add [] dict)) tests
   where
-    (tests, _:dict) = span (/= "END OF INPUT") xs
+    (tests, _:dict) = span (/= (12, "END OF INPUT")) xs
 
-peers :: [[String]] -> String -> Int
-peers gs input = foldr ((+) . length) 0 $ fst $ divide input gs
+peers :: [M.Map Int (S.Set String)] -> (Int, String) -> Int
+peers gs input = foldl (\i m-> i + foldl (\j s-> j + S.size s) 0 m) 0 $ fst $ divide input gs
 
-friends :: String -> String -> Bool
-friends []  [] = True
-friends [] [_] = True
-friends [_] [] = True
-friends (x:xs) (y:ys) | x == y    = friends xs ys
-                      | otherwise = xs == ys || x:xs == ys || xs == y:ys
-friends _ _ = False
-
-add :: [[String]] -> String -> [[String]]
-add groups x | null friendlyGroups = [x]:groups
-             | otherwise           = (x : concat friendlyGroups) : unfriendlyGroups
+add :: [M.Map Int (S.Set String)] -> (Int,String) -> [M.Map Int (S.Set String)]
+add groups x@(i,s) | null friendlyGroups = singleGroup : groups
+                   | otherwise           = friendlyGroup : unfriendlyGroups
   where
     (friendlyGroups, unfriendlyGroups) = divide x groups
+    singleGroup   = M.singleton i (S.singleton s)
+    friendlyGroup = M.unionsWith S.union (singleGroup : friendlyGroups)
 
-divide :: String -> [[String]] -> ([[String]], [[String]])
+divide :: (Int,String) -> [M.Map Int (S.Set String)] -> ([M.Map Int (S.Set String)], [M.Map Int (S.Set String)])
 divide _ [] = ([], [])
-divide x (group:groups)
-  | any (friends x) group = (group:friendlyGroups, unfriendlyGroups)
-  | otherwise             = (friendlyGroups, group:unfriendlyGroups)
+divide t@(i,s) (group:groups)
+  | friendsInGroup = (group:friendlyGroups, unfriendlyGroups)
+  | otherwise      = (friendlyGroups, group:unfriendlyGroups)
   where
-    (friendlyGroups, unfriendlyGroups) = divide x groups
+    (friendlyGroups, unfriendlyGroups) = divide t groups
+    friendsInGroup = anyEqualFriends || anySmallerFriends || anyLargerFriends
+    anyEqualFriends = case M.lookup i group of
+      Nothing -> False
+      Just ss -> any (equalFriend s) ss
+    anySmallerFriends = case M.lookup (i - 1) group of
+      Nothing -> False
+      Just ss -> any (unequalFriend s) ss
+    anyLargerFriends = case M.lookup (i + 1) group of
+      Nothing -> False
+      Just ss -> any (`unequalFriend` s) ss
+
+    equalFriend (x:xs) (y:ys) | x == y = equalFriend xs ys
+                              | otherwise = xs == ys
+    equalFriend _ _           = True
+
+    unequalFriend (x:xs) yys@(y:ys) | x == y    = unequalFriend xs ys
+                                    | otherwise = xs == yys
+    unequalFriend _ _               = True
