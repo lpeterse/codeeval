@@ -1,0 +1,25 @@
+./main input.txt +RTS -sp 
+  46,367,207,040 bytes allocated in the heap
+  27,768,168,304 bytes copied during GC
+      11,923,600 bytes maximum residency (2054 sample(s))
+         369,400 bytes maximum slop
+              36 MB total memory in use (0 MB lost due to fragmentation)
+
+                                     Tot time (elapsed)  Avg pause  Max pause
+  Gen  0     87280 colls,     0 par    8.188s   8.184s     0.0001s    0.0006s
+  Gen  1      2054 colls,     0 par    9.247s   9.248s     0.0045s    0.0116s
+
+  INIT    time    0.000s  (  0.000s elapsed)
+  MUT     time   35.815s  ( 35.816s elapsed)
+  GC      time   17.436s  ( 17.432s elapsed)
+  RP      time    0.000s  (  0.000s elapsed)
+  PROF    time    0.000s  (  0.000s elapsed)
+  EXIT    time    0.002s  (  0.002s elapsed)
+  Total   time   53.256s  ( 53.251s elapsed)
+
+  %GC     time      32.7%  (32.7% elapsed)
+
+  Alloc rate    1,294,613,350 bytes per MUT second
+
+  Productivity  67.3% of total user, 67.3% of total elapsed
+

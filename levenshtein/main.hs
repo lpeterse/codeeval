@@ -7,7 +7,9 @@ main :: IO ()
 main = argl . zipWith (\i x->(i, length x, x)) [1..] . lines =<< readFile . head =<< getArgs
 
 argl :: [(Int, Int, String)] -> IO ()
-argl xs = mapM_ (print . flip peers groups) tests
+argl xs = do
+  mapM_ (print . flip peers groups) tests
+  print groups
   where
     (tests, _:dict) = span (\(_,_,s)-> s /= "END OF INPUT") xs
     groups          = foldr add IM.empty dict

@@ -1,0 +1,76 @@
+	Sun Jun 12 14:53 2016 Time and Allocation Profiling Report  (Final)
+
+	   main +RTS -s -p -RTS input.txt
+
+	total time  =       19.07 secs   (19075 ticks @ 1000 us, 1 processor)
+	total alloc = 7,364,421,488 bytes  (excludes profiling overheads)
+
+COST CENTRE                                           MODULE    %time %alloc
+
+findFriendlyGroupIds.friendsInGroup.anyEqualFriends   Main       20.4    4.0
+findFriendlyGroupIds                                  Main       20.3   86.9
+findFriendlyGroupIds.friendsInGroup.unequalFriend     Main       14.2    0.0
+findFriendlyGroupIds.friendsInGroup.equalFriend       Main       11.6    0.0
+findFriendlyGroupIds.friendsInGroup                   Main       10.5    0.0
+findFriendlyGroupIds.friendsInGroup.anyLargerFriends  Main        9.5    4.1
+findFriendlyGroupIds.friendsInGroup.anySmallerFriends Main        9.3    3.5
+findFriendlyGroupIds.\                                Main        3.5    0.0
+
+
+                                                                                                           individual     inherited
+COST CENTRE                                                    MODULE                    no.     entries  %time %alloc   %time %alloc
+
+MAIN                                                           MAIN                       55           0    0.0    0.0   100.0  100.0
+ main                                                          Main                      111           0    0.2    0.6   100.0  100.0
+  main.\                                                       Main                      116       23108    0.0    0.0     0.0    0.0
+  argl                                                         Main                      112           1    0.3    0.7    99.8   99.4
+   argl.groups                                                 Main                      125           1    0.0    0.0    99.4   98.7
+    add                                                        Main                      126       23103    0.2    0.2    99.4   98.7
+     add.friendlyGroups                                        Main                      139        1065    0.0    0.0     0.0    0.0
+      add.friendlyGroups.\                                     Main                      140        2204    0.0    0.0     0.0    0.0
+     add.friendlyGroup                                         Main                      138        1065    0.0    0.0     0.0    0.0
+     add.unfriendlyGroups                                      Main                      137        1065    0.0    0.0     0.0    0.0
+     add.friendlyIds                                           Main                      127       23103    0.0    0.0    99.2   98.5
+      findFriendlyGroupIds                                     Main                      128       23103   20.3   86.9    99.2   98.4
+       findFriendlyGroupIds.\                                  Main                      129   114215910    3.5    0.0    78.9   11.6
+        findFriendlyGroupIds.friendsInGroup                    Main                      130   114215910   10.5    0.0    75.4   11.6
+         findFriendlyGroupIds.friendsInGroup.anyLargerFriends  Main                      133   114208400    9.5    4.1    17.9    4.1
+          findFriendlyGroupIds.friendsInGroup.unequalFriend    Main                      134    28404679    8.5    0.0     8.5    0.0
+         findFriendlyGroupIds.friendsInGroup.anySmallerFriends Main                      132   114209369    9.3    3.5    15.0    3.5
+          findFriendlyGroupIds.friendsInGroup.unequalFriend    Main                      135    28734889    5.7    0.0     5.7    0.0
+         findFriendlyGroupIds.friendsInGroup.anyEqualFriends   Main                      131   114215910   20.4    4.0    32.0    4.0
+          findFriendlyGroupIds.friendsInGroup.equalFriend      Main                      136    29915008   11.6    0.0    11.6    0.0
+   argl.dict                                                   Main                      124           1    0.0    0.0     0.0    0.0
+   peers                                                       Main                      122           4    0.0    0.0     0.0    0.0
+    peers.\                                                    Main                      150           4    0.0    0.0     0.0    0.0
+    peers.\                                                    Main                      149           4    0.0    0.0     0.0    0.0
+     peers.\.\                                                 Main                      151          13    0.0    0.0     0.0    0.0
+    findFriendlyGroupIds                                       Main                      123           4    0.0    0.0     0.0    0.0
+     findFriendlyGroupIds.\                                    Main                      141       39360    0.0    0.0     0.0    0.0
+      findFriendlyGroupIds.friendsInGroup                      Main                      142       39360    0.0    0.0     0.0    0.0
+       findFriendlyGroupIds.friendsInGroup.anyLargerFriends    Main                      146       39357    0.0    0.0     0.0    0.0
+        findFriendlyGroupIds.friendsInGroup.unequalFriend      Main                      148        5061    0.0    0.0     0.0    0.0
+       findFriendlyGroupIds.friendsInGroup.anySmallerFriends   Main                      144       39357    0.0    0.0     0.0    0.0
+        findFriendlyGroupIds.friendsInGroup.unequalFriend      Main                      145        5494    0.0    0.0     0.0    0.0
+       findFriendlyGroupIds.friendsInGroup.anyEqualFriends     Main                      143       39360    0.0    0.0     0.0    0.0
+        findFriendlyGroupIds.friendsInGroup.equalFriend        Main                      147        5515    0.0    0.0     0.0    0.0
+   argl.tests                                                  Main                      121           1    0.0    0.0     0.0    0.0
+   argl.(...)                                                  Main                      113           1    0.0    0.0     0.0    0.0
+    argl.(...).\                                               Main                      117           5    0.0    0.0     0.0    0.0
+ CAF:main1                                                     Main                      108           0    0.0    0.0     0.0    0.0
+  main                                                         Main                      110           1    0.0    0.0     0.0    0.0
+ CAF:main4                                                     Main                      106           0    0.0    0.0     0.0    0.0
+  main                                                         Main                      114           0    0.0    0.0     0.0    0.0
+ CAF:main11                                                    Main                      105           0    0.0    0.0     0.0    0.0
+  argl                                                         Main                      118           0    0.0    0.0     0.0    0.0
+   argl.(...)                                                  Main                      119           0    0.0    0.0     0.0    0.0
+    argl.(...).\                                               Main                      120           0    0.0    0.0     0.0    0.0
+ CAF                                                           Data.Set.Base             100           0    0.0    0.0     0.0    0.0
+ CAF                                                           Data.IntMap.Base           99           0    0.0    0.0     0.0    0.0
+ CAF                                                           GHC.IO.Handle.FD           96           0    0.0    0.0     0.0    0.0
+ CAF                                                           GHC.IO.Encoding            93           0    0.0    0.0     0.0    0.0
+ CAF                                                           GHC.IO.Handle.Text         92           0    0.0    0.0     0.0    0.0
+ CAF                                                           GHC.Conc.Signal            88           0    0.0    0.0     0.0    0.0
+ CAF                                                           GHC.IO.Handle.Internals    87           0    0.0    0.0     0.0    0.0
+ CAF                                                           GHC.IO.Encoding.Iconv      77           0    0.0    0.0     0.0    0.0
+ CAF                                                           GHC.IO.FD                  75           0    0.0    0.0     0.0    0.0
